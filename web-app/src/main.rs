@@ -33,7 +33,7 @@ async fn index(tera: web::Data<Tera>) -> impl Responder{
     let mut data = Context::new();
     
     let posts = [
-        Post{
+        Thread{
             title: String::from("Test Post"),
             link: String::from("https://tera.netlify.app/docs/"),
             author: String::from("Tawm")
@@ -99,7 +99,7 @@ async fn main() -> std::io::Result<()>{
             .route("/register", web::post().to(register_user))
             .route("/login", web::get().to(login))
             .route("/login", web::post().to(login_user))
-            .route("/post", web::get().to(post))
+            .route("/post", web::get().to(thread))
             .route("/post", web::post().to(post_thread))
     })
     .bind("127.0.0.1:8000")?
