@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 actix-web = "3"
+tera = "1"
+serde = "^1"
