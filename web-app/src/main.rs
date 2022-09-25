@@ -2,6 +2,7 @@ use actix_web::{HttpServer, App, web, HttpResponse, Responder};
 use tera::{Tera, Context};
 use serde::{Serialize, Deserialize};
 
+//STRUCTS###
 
 #[derive(Serialize)]
 struct Thread {
@@ -29,6 +30,8 @@ struct LoginAttempt{
     password: String
 }
 
+//FUNCTIONS###
+
 async fn index(tera: web::Data<Tera>) -> impl Responder{
     let mut data = Context::new();
     
@@ -48,6 +51,7 @@ async fn index(tera: web::Data<Tera>) -> impl Responder{
     HttpResponse::Ok().body(rendered)
 }
 
+//Registration page
 async fn register(tera: web::Data<Tera>) -> impl Responder{
     let mut data = Context::new();
 
@@ -56,11 +60,13 @@ async fn register(tera: web::Data<Tera>) -> impl Responder{
     HttpResponse::Ok().body(rendered)
 }
 
+//Registration form
 async fn register_user(data: web::Form<User>) -> impl Responder{
     println!("{:?}", data);
     HttpResponse::Ok().body(format!("Succesfully registered user: {}", data.username))
 }
 
+//Login page
 async fn login(tera: web::Data<Tera>) -> impl Responder{
     let mut data = Context::new();
 
@@ -69,11 +75,13 @@ async fn login(tera: web::Data<Tera>) -> impl Responder{
     HttpResponse::Ok().body(rendered)
 }
 
+//Login form
 async fn login_user(data: web::Form<LoginAttempt>) -> impl Responder{
     println!("{:?}", data);
     HttpResponse::Ok().body(format!("Succesfully logged in as: {}", data.username))
 }
 
+//Threads page
 async fn thread(tera: web::Data<Tera>) -> impl Responder{
     let mut data = Context::new();
 
@@ -82,6 +90,7 @@ async fn thread(tera: web::Data<Tera>) -> impl Responder{
     HttpResponse::Ok().body(rendered)
 }
 
+//Thread submission form
 async fn post_thread(data: web::Form<PostAttempt>) -> impl Responder {
     println!("{:?}", data);
     HttpResponse::Ok().body(format!("Succesfully Posted Thread: {}", data.title))
