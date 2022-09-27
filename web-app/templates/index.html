@@ -1,10 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-		{% for post in posts %}
-		<div class="post">
-			<a href="{{post.link}}">{{post.title}}</a>
-			<small>{{post.author}}</small>
-		</div>
+<table>
+		{% for thread in threadsInfo %}
+
+		{% set t = thread[0] %}
+		{% set u = thread[1] %}
+
+		<tr>
+			<td>{{loop.index}}</td>
+			<td>
+				<a href="{{ t.link }}">{{ t.title }}</a>
+			
+				<small>
+					Posted by:
+					<a href="/user/{{ u.username }}">{{ u.username }}</a>
+				</small>
+				<small>
+					<a href="/thread/{{ t.id }}">Comments</a>
+				</small>
+				</br>
+				<small>{{ t.createdat }}</small>
+			</td>
+		</tr>
 		{% endfor %}
+</table>
 {% endblock %}
