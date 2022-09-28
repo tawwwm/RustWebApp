@@ -84,9 +84,11 @@ async fn register_user(data: web::Form<NewUser>) -> impl Responder{
     use schema::users;
 
     let mut connection = establish_connection();
+    
+    let new_user = NewUser::new(data.username.clone(), data.email.clone(), data.password.clone())
 
     diesel::insert_into(users::table)
-        .values(&*data)
+        .values(&new_user)
         .get_result::<User>(&mut connection)
         .expect("Error registering user.");
 
@@ -116,7 +118,18 @@ async fn login_user(data: web::Form<LoginUser>, id: Identity) -> impl Responder{
 
     match user{
         Ok(u) => {
-            if u.password == data.password {
+            dotenv.ok();
+            let secre = std::env::var("SECRET_KEY")
+                .expect("Secret Key not set.");
+            
+            let valid = Verifier::default()
+                .with_hash(u.password)
+                .with_password(data.password.clone())
+                .with_secret_key(secret)
+                .verify()
+                .unwrap();
+
+            if valid {
                 let session_token = String::from(u.username);
                 id.remember(session_token);
                 HttpResponse::Ok().body(format!("Succesfully logged in as: {}", data.username))

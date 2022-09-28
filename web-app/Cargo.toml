@@ -13,6 +13,7 @@ serde = "^1"
 dotenv = "^0.15"
 diesel = { verion = "^1.4.4", features = ["postgres", "chrono"] }
 chrono = { version = "0.4", features = ["serde"] }
+argonautica = "0.2"
 
 #For security
 tokio = "^1.8.4"
