@@ -11,7 +11,7 @@ pub struct User{
 }
 
 #[derive(Debug, Deserialize, Insertable)]
-#[table_name="users"]
+#[diesel(table_name= users)]
 pub struct NewUser{
 	pub username: String,
 	pub email: String,
@@ -24,7 +24,7 @@ pub struct LoginUser{
 	pub password: String,
 }
 
-#[derive(Serialize, Debug, Queryable)]
+#[derive(Serialize, Debug, Queryable, Identifiable)]
 pub struct Thread{
 	pub id: i32,
 	pub title: String,
@@ -34,12 +34,12 @@ pub struct Thread{
 }
 
 #[derive(Serialize, Insertable)]
-#[table_name="threads"]
+#[diesel(table_name= threads)]
 pub struct NewThread{
 	pub title: String,
 	pub link: String,
 	pub author_id: i32,
-	pub createdat: chrono::NaiveDateTime,
+	pub created_at: chrono::NaiveDateTime,
 }
 
 impl NewThread{
@@ -48,13 +48,14 @@ impl NewThread{
 			title: title,
 			link: link,
 			author_id: uid,
-			createdat: chrono::Local::now().naive_utc(),
+			created_at: chrono::Local::now().naive_utc(),
 		}
 	}
 }
 
 
-#[derive(Serialize, Debug, Queryable)]
+#[derive(Serialize, Debug, Queryable, Identifiable, Associations)]
+#[diesel(belongs_to(Thread))]
 pub struct Comment{
 	pub id: i32,
 	pub content: String,
@@ -65,6 +66,7 @@ pub struct Comment{
 }
 
 #[derive(Serialize, Insertable)]
+#[diesel(table_name= comments)]
 pub struct NewComment{
 	pub content: String,
 	pub thread_id: i32,

@@ -139,7 +139,7 @@ async fn logout_user(id: Identity) -> impl Responder{
 }
 
 //Threads page
-async fn thread(tera: web::Data<Tera>, id: Identity) -> impl Responder{
+async fn post(tera: web::Data<Tera>, id: Identity) -> impl Responder{
     let mut data = Context::new();
 
     data.insert("title", "Post Thread");
@@ -188,6 +188,7 @@ async fn thread_page(tera: web::Data<Tera>, id: Identity, web::Path(thread_id): 
 
     use schema::threads::dsl::{threads};
     use schema::users::dsl::{users};
+    //use schema::comments::dsl::{comments};
 
     let mut connection = establish_connection();
 
@@ -195,14 +196,20 @@ async fn thread_page(tera: web::Data<Tera>, id: Identity, web::Path(thread_id): 
         .get_result(&mut connection)
         .expect("Failed to load thread.");
     
-    let user :User = users.find(thread.authorid)
+    let user :User = users.find(thread.author_id)
         .get_result(&mut connection)
         .expect("Failed to load thread author.");
     
+    let comments :Vec<(Comment, User)> = Comment::belonging_to(&thread)
+        .inner_join(users)
+        .load(&mut connection)
+        .expect("Failed to load comments.");
+
     let mut data = Context::new();
-    data.insert("Title",&format!("{}", thread.title));
+    data.insert("title",&format!("{}", thread.title));
     data.insert("thread", &thread);
     data.insert("user", &user);
+    data.insert("comments", &comments);
 
     if let Some(_id) = id.identity() {
         data.insert("logged_in", "true");
@@ -210,7 +217,7 @@ async fn thread_page(tera: web::Data<Tera>, id: Identity, web::Path(thread_id): 
         data.insert("logged_in", "false");
     }
 
-    let rendered = tera.render("post.html", &data).unwrap();
+    let rendered = tera.render("thread.html", &data).unwrap();
     HttpResponse::Ok().body(rendered)    
 }
 
@@ -218,11 +225,11 @@ async fn comment(data: web::Form<CommentForm>, id:Identity, web::Path(thread_id)
 
     if let Some(id) = id.identity(){
         use schema::threads::dsl::{threads};
-        use schema::users::dsl::{users};
+        use schema::users::dsl::{users, username};
 
         let mut connection = establish_connection();
 
-        let thread :Thread = thread.find(thread_id)
+        let thread :Thread = threads.find(thread_id)
             .get_result(&mut connection)
             .expect("Failed to find post.");
         
@@ -233,7 +240,7 @@ async fn comment(data: web::Form<CommentForm>, id:Identity, web::Path(thread_id)
         match user{
             Ok(u) => {
                 let parent_id = None;
-                let new_comment = NewComment::new(data.comment.clone(), post.id, u.id, parent_id);
+                let new_comment = NewComment::new(data.content.clone(), thread.id, u.id, parent_id);
 
                 use schema::comments;
                 diesel::insert_into(comments::table)
@@ -274,7 +281,7 @@ async fn main() -> std::io::Result<()>{
             .route("/login", web::get().to(login))
             .route("/login", web::post().to(login_user))
             .route("/logout", web::to(logout_user))
-            .route("/post", web::get().to(thread))
+            .route("/post", web::get().to(post))
             .route("/post", web::post().to(post_thread))
             .service(
                 web::resource("/thread/{thread_id}")
