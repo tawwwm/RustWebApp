@@ -11,9 +11,12 @@ actix-identity = "^0.3.1"
 tera = "1"
 serde = "^1"
 dotenv = "^0.15"
-diesel = { verion = "^1.4.4", features = ["postgres", "chrono"] }
+diesel = { verion = "^1.4.4", features = ["postgres", "chrono", "r2d2"] }
 chrono = { version = "0.4", features = ["serde"] }
 argonautica = "0.2"
+#argon2 = "0.4"
+#rand_core = { version = "0.6", features = ["std"] }
+r2d2 = "0.8"
 
 #For security
 tokio = "^1.8.4"
