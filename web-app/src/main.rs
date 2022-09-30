@@ -13,6 +13,7 @@ use diesel::pg::PgConnection;
 use diesel::{r2d2::ConnectionManager};
 use dotenv::dotenv;
 use argonautica::Verifier;
+use actix_web::middleware::Logger;
 
 
 // FILE IMPORTS #
@@ -80,12 +81,14 @@ impl actix_web::error::ResponseError for ServerError{
 
 impl From<std::env::VarError> for ServerError {
     fn from(_: std::env::VarError) -> ServerError{
+        log::error!("{:?}", ServerError::EnvironmentError);
         ServerError::EnvironmentError
     }
 }
 
 impl From<r2d2::Error> for ServerError{
     fn from(_: r2d2::Error) -> ServerError{
+        log::error!("{:?}", ServerError::R2D2Error);
         ServerError::R2D2Error
     }
 }
@@ -93,7 +96,10 @@ impl From<r2d2::Error> for ServerError{
 impl From<diesel::result::Error> for ServerError{
     fn from(err: diesel::result::Error) -> ServerError{
         match err {
-            diesel::result::Error::NotFound => ServerError::UserError("Username not found".to_string()),
+            diesel::result::Error::NotFound => {
+                log::error!("{:?}", err);
+                ServerError::UserError("Username not found".to_string())
+            }, 
             _ => ServerError::DieselError
         }
     }
@@ -101,12 +107,14 @@ impl From<diesel::result::Error> for ServerError{
 
 impl From<argonautica::Error> for ServerError{
     fn from(_: argonautica::Error) -> ServerError{
+        log::error!("{:?}", ServerError::ArgonauticError);
         ServerError::ArgonauticError
     }
 }
 
 impl From<tera::Error> for ServerError{
     fn from(_: tera::Error) -> ServerError{
+        log::error!("{:?}", ServerError::TeraError);
         ServerError::TeraError
     }
 }
@@ -324,6 +332,7 @@ async fn comment(data: web::Form<CommentForm>, id:Identity, web::Path(thread_id)
 #[actix_web::main]
 async fn main() -> std::io::Result<()>{
     dotenv().ok();
+    env_logger::init();
     let database_url = std::env::var("DATABASE_URL")
         .expect("Database URL not set.");
     
@@ -331,17 +340,18 @@ async fn main() -> std::io::Result<()>{
     let pool = r2d2::Pool::builder().build(manager)
         .expect("Failed to create Postgres pool.");
     
-    //env_logger::init();    
     
-    HttpServer::new(|| {
+    HttpServer::new(move|| {
         let tera = Tera::new("templates/**/*").unwrap();
         App::new()
+            .wrap(Logger::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&[0;32])
                 .name("auth-cookie")
                 .secure(false)
             ))
             .data(tera)
+            .data(pool.clone())
             .route("/", web::get().to(index))
             .route("/register", web::get().to(register))
             .route("/register", web::post().to(register_user))
