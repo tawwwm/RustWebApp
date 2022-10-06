@@ -4,10 +4,10 @@ pub mod schema;
 pub mod models;
 
 // IMPORTS ###
-use actix_web::{HttpServer, App, web, HttpResponse, Responder};
+use actix_web::{HttpServer, App, web, HttpResponse};
 use actix_identity::{Identity, CookieIdentityPolicy, IdentityService};
 use tera::{Tera, Context};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize};
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use diesel::{r2d2::ConnectionManager};
@@ -24,7 +24,7 @@ type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 
 // STRUCTS ###
-#[derive(Deserialize, Debug)]
+/*#[derive(Deserialize, Debug)]
 struct PostAttempt {
     title: String,
     link: String
@@ -34,7 +34,7 @@ struct PostAttempt {
 struct LoginAttempt{
     username: String,
     password: String
-}
+}*/
 
 #[derive(Deserialize, Debug)]
 struct PostForm{
@@ -265,7 +265,7 @@ async fn thread_page(tera: web::Data<Tera>, id: Identity, web::Path(thread_id): 
     let thread :Thread = threads.find(thread_id)
         .get_result(&mut connection)?;
     
-    let user :User = users.find(thread.author_id)
+    let user :User = users.find(thread.user_id)
         .get_result(&mut connection)?;
     
     let comments :Vec<(Comment, User)> = Comment::belonging_to(&thread)
@@ -327,6 +327,31 @@ async fn comment(data: web::Form<CommentForm>, id:Identity, web::Path(thread_id)
 
 }
 
+async fn profile(tera: web::Data<Tera>, _id: Identity, web::Path(user_id): web::Path<i32>, pool: web::Data<Pool>) -> Result<HttpResponse, ServerError>{
+
+    use schema::threads::dsl::{threads};
+    use schema::users::dsl::{users};
+
+    let mut connection = pool.get()?;
+
+    let user: User = users.find(user_id)
+        .get_result(&mut connection)?; 
+
+    /*let user_threads: Vec<Thread> = threads.find(user_id)
+        .load(&mut connection)?;*/
+
+    let user_threads: Vec<Thread> = Thread::belonging_to(&user)
+        .load(&mut connection)?;
+
+    let mut data = Context::new();
+    data.insert("title",&format!("{}", user.username));
+    data.insert("user", &user);
+    data.insert("threads", &user_threads);
+    
+    let rendered = tera.render("user.html", &data)?;
+    Ok(HttpResponse::Ok().body(rendered))
+}
+
 
 
 #[actix_web::main]
@@ -364,6 +389,10 @@ async fn main() -> std::io::Result<()>{
                 web::resource("/thread/{thread_id}")
                     .route(web::get().to(thread_page))
                     .route(web::post().to(comment))
+            )
+            .service(
+                web::resource("/user/{user_id}")
+                    .route(web::get().to(profile))
             )
     })
     .bind("127.0.0.1:8000")?

@@ -2,19 +2,40 @@
 <html>
 	<head>
 		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>{{title}}</title>
-		<link rel="stylesheet" href="style.css">
+		<!-- <link rel="stylesheet" href="styles/style.css"> -->
+		<!-- Pure CSS -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css" integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/grids-responsive-min.css">
+		
+
 	</head>
 	<body>
-		<header>
-			<b>Web-App</b>
-			<div id="navbar">
-				<btn onclick="window.location.href='/login'">Login</btn>
-				<btn onclick="window.location.href='/register'">Register</btn>
-				<btn onclick="window.location.href='/post'">Post</btn>
-				<btn onclick="window.location.href='/logout'">Logout</btn>
+		<div class="header">
+			<div class="pure-menu pure-menu-horizontal">
+				<a class="pure-menu-heading pure-menu-link" onclick="window.location.href='/'">Web-App</a>
+				<ul id="pure-menu-list" style="display:inline;">
+
+					<li class="pure-menu-item">
+						<a class="pure-menu-link" onclick="window.location.href='/login'">Login</a>
+					</li>
+
+					<li class="pure-menu-item">
+						<a class="pure-menu-link" onclick="window.location.href='/register'">Regiser</a>
+					</li>
+
+					<li class="pure-menu-item">
+						<a class="pure-menu-link" onclick="window.location.href='/post'">Post</a>
+					</li>
+
+					<li class="pure-menu-item">
+						<a class="pure-menu-link" onclick="window.location.href='/logout'">Logout</a>
+					</li>
+
+				</ul>
 			</div>
-		</header>
+		</div>
 		<hr>
 		{% block content %}
 		{% endblock %}

@@ -1,4 +1,5 @@
 -- Your SQL goes here
+-- Your SQL goes here
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR NOT NULL,
@@ -13,11 +14,11 @@ CREATE TABLE threads (
 	id SERIAL PRIMARY KEY,
 	title VARCHAR NOT NULL,
 	link VARCHAR,
-	author_id INT NOT NULL,
+	user_id INT NOT NULL,
 	created_at TIMESTAMP NOT NULL,
 
 	CONSTRAINT fk_author
-		FOREIGN KEY(author_id)
+		FOREIGN KEY(user_id)
 			REFERENCES users(id)
 );
 
@@ -25,7 +26,7 @@ CREATE TABLE comments (
 	id SERIAL PRIMARY KEY,
 	content VARCHAR NOT NULL,
 	thread_id INT NOT NULL,
-	author_id INT NOT NULL,
+	user_id INT NOT NULL,
 	parent_comment_id INT,
 	created_at TIMESTAMP NOT NULL,
 
@@ -34,7 +35,7 @@ CREATE TABLE comments (
 			REFERENCES threads(id),
 
 	CONSTRAINT fk_user
-		FOREIGN KEY(author_id)
+		FOREIGN KEY(user_id)
 			REFERENCES users(id),
 
 	CONSTRAINT fk_parent_comment

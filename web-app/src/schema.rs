@@ -5,7 +5,7 @@ diesel::table! {
         id -> Int4,
         content -> Varchar,
         thread_id -> Int4,
-        author_id -> Int4,
+        user_id -> Int4,
         parent_comment_id -> Nullable<Int4>,
         created_at -> Timestamp,
     }
@@ -16,7 +16,7 @@ diesel::table! {
         id -> Int4,
         title -> Varchar,
         link -> Nullable<Varchar>,
-        author_id -> Int4,
+        user_id -> Int4,
         created_at -> Timestamp,
     }
 }
@@ -31,8 +31,8 @@ diesel::table! {
 }
 
 diesel::joinable!(comments -> threads (thread_id));
-diesel::joinable!(comments -> users (author_id));
-diesel::joinable!(threads -> users (author_id));
+diesel::joinable!(comments -> users (user_id));
+diesel::joinable!(threads -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     comments,

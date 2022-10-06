@@ -1,0 +1,12 @@
+body{
+    font-size: 18px;
+}
+.navbar{
+    background-color:#42273B;
+    
+}
+.navbar-options{
+    float: right;
+    text-align: left;
+    overflow: hidden;
+}
